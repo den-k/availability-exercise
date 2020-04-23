@@ -1,10 +1,33 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      error: null,
+      isLoaded: false,
+      items: []
+    };
     this.fetchToday();
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:5000/bookings')
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            items: result
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
   }
 
   async fetchToday() {
@@ -17,7 +40,14 @@ class App extends Component {
     }
   }
 
+  addBooking(advId, dt) {
+    this.setState(state => ({
+      items: { advId : undefined }
+    }));
+  }
+
   render() {
+    const { error, isLoaded, items } = this.state;
     return (
       <div className="App container">
         <h1>Book Time with an Advisor</h1>
@@ -40,36 +70,25 @@ class App extends Component {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>35545</td>
-              <td>
-                <ul className="list-unstyled">
-                  <li>
-                    <time dateTime="2019-04-04T13:00:00-04:00" className="book-time">4/4/2019 1:00 pm</time>
-                    <button className="book btn-small btn-primary">Book</button>
-                  </li>
-                  <li>
-                    <time dateTime="2019-04-05T10:00:00-04:00" className="book-time">4/5/2019 10:00 am</time>
-                    <button className="book btn-small btn-primary">Book</button>
-                  </li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td>36232</td>
-              <td>
-                <ul className="list-unstyled">
-                  <li>
-                    <time dateTime="2019-04-02T13:00:00-04:00" className="book-time">4/2/2019 1:00 pm</time>
-                    <button className="book btn-small btn-primary">Book</button>
-                  </li>
-                  <li>
-                    <time dateTime="2019-04-03T11:00:00-04:00" className="book-time">4/3/2019 11:00 am</time>
-                    <button className="book btn-small btn-primary">Book</button>
-                  </li>
-                </ul>
-              </td>
-            </tr>
+            {
+              Object.keys(items).map((advId, i) => (
+                <tr>
+                  <td>{advId}</td>
+                  <td>
+                    <ul className="list-unstyled">
+                    {
+                      items[advId].map((dt, j) => (
+                        <li>
+                          <time dateTime="{dt}" className="book-time">{dt}</time>
+                          <button className="book btn-small btn-primary" onClick={() => this.addBooking(advId, dt)}>Book</button>
+                        </li>
+                      ))
+                    }
+                    </ul>
+                  </td>
+                </tr>
+              ))
+            }
           </tbody>
         </table>
 
